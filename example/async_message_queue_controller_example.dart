@@ -5,7 +5,7 @@ import "dart:async";
 /// Here the payload is a simple string, an simulates a heavy process
 /// lasting 1 second.
 /// returns a Map
-Future<Map<String,String>> process(String msg){
+Future<Map<String,String>> process(dynamic msg){
   return new Future.delayed(const Duration(seconds: 1), () => {'OK':' Processed msg : $msg'});
 }
 
@@ -16,7 +16,7 @@ void main() async {
   var mqc = new AsyncMessageQueueController<String, Map<String,String>>(process);
 
 
-  Stream<Map<String, String>> s = mqc.start();
+  Stream<Map<String, String>>? s = mqc.start();
 
   mqc.queueMessage('Hello'); // will appear after 1 sec
   mqc.queueMessage('World'); // will appear after 2 sec
@@ -28,7 +28,7 @@ void main() async {
   new Timer(new Duration(seconds: 4), ()=> mqc.queueMessage('will not be processed') );
 
   // Loop waiting for processed values
-  await for (var value in s) {
+  await for (var value in s!) {
     if (value['OK'] == ' Processed msg : stop') break;
     print(value['OK']);
 

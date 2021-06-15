@@ -4,8 +4,8 @@ import 'dart:collection';
 typedef OUT AsyncMessageQueueCallback<IN,OUT>(IN);
 
 class AsyncMessageQueueController<Tinput,Toutput>{
-  StreamController<Tinput> _controllerIn;
-  StreamController<Toutput> _controllerOut;
+  StreamController<Tinput>? _controllerIn;
+  StreamController<Toutput>? _controllerOut;
   bool _isProcessing = false;
   bool _isRunning = false;
   Queue<Tinput> _queue = new Queue<Tinput>();
@@ -20,11 +20,11 @@ class AsyncMessageQueueController<Tinput,Toutput>{
     _queue.clear();
 
     if (_controllerIn != null ){
-      _controllerIn.close();
+      _controllerIn?.close();
       _controllerIn = null;
     }
     if (_controllerOut != null ){
-      _controllerOut.close();
+      _controllerOut?.close();
       _controllerOut = null;
     }
     _isRunning = false;
@@ -34,7 +34,7 @@ class AsyncMessageQueueController<Tinput,Toutput>{
   }
 
   /// Starts waiting for messages to be added to the queue
-  Stream<Toutput> start() {
+  Stream<Toutput>? start() {
 
     _controllerIn = new StreamController<Tinput>();
     _controllerOut= new StreamController<Toutput>();
@@ -42,8 +42,8 @@ class AsyncMessageQueueController<Tinput,Toutput>{
     _isRunning = true;
     _isProcessing = false;
 
-    _controllerIn.stream.listen(onData);
-    return _controllerOut.stream;
+    _controllerIn?.stream.listen(onData);
+    return _controllerOut?.stream;
 
 
   }
@@ -61,7 +61,7 @@ class AsyncMessageQueueController<Tinput,Toutput>{
       while(_queue.isNotEmpty && _isRunning) {
         Tinput data = _queue.removeFirst();
 
-        _controllerOut.add(await _processor(data));
+        _controllerOut?.add(await _processor(data));
       }
       _isProcessing =  false;
     }
@@ -73,7 +73,7 @@ class AsyncMessageQueueController<Tinput,Toutput>{
   void queueMessage(Tinput msg){
     if (_isRunning) {
       _queue.add(msg);
-      _controllerIn.add(msg);
+      _controllerIn?.add(msg);
     }
   }
 
