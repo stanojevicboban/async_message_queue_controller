@@ -29,13 +29,10 @@ class AsyncMessageQueueController<Tinput,Toutput>{
     }
     _isRunning = false;
     _isProcessing = false;
-
-
   }
 
   /// Starts waiting for messages to be added to the queue
   Stream<Toutput>? start() {
-
     _controllerIn = new StreamController<Tinput>();
     _controllerOut= new StreamController<Toutput>();
 
@@ -44,8 +41,6 @@ class AsyncMessageQueueController<Tinput,Toutput>{
 
     _controllerIn?.stream.listen(onData);
     return _controllerOut?.stream;
-
-
   }
 
   /// asynchronous loop where the callback is called.
@@ -61,17 +56,18 @@ class AsyncMessageQueueController<Tinput,Toutput>{
       while(_queue.isNotEmpty && _isRunning) {
         Tinput data = _queue.removeFirst();
 
-        _controllerOut?.add(await _processor(data));
+        if (!(_controllerOut?.isClosed??true)) {
+          _controllerOut?.add(await _processor(data));
+        }
       }
       _isProcessing =  false;
     }
-
   }
 
   /// Adds a message to the message queue
   /// The message will only be kept and processed if the controller is running
   void queueMessage(Tinput msg){
-    if (_isRunning) {
+    if (_isRunning && !(_controllerIn?.isClosed??true)) {
       _queue.add(msg);
       _controllerIn?.add(msg);
     }
